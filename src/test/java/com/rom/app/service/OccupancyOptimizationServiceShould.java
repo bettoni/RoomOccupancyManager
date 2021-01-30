@@ -1,20 +1,21 @@
 package com.rom.app.service;
 
+import com.rom.app.model.OptimizedRoomOccupancy;
+import com.rom.app.model.RoomType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class OccupancyOptimizationServiceShould {
 
-    OccupancyOptimizationService service;
+    private OccupancyOptimizationService service;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         service = new OccupancyOptimizationService();
     }
 
@@ -25,13 +26,14 @@ public class OccupancyOptimizationServiceShould {
         int freePremiumRooms = 0;
         int freeEconomyRoom = 3;
 
-        Map<String, Integer[]> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        OptimizedRoomOccupancy economyRoomResult = getRoomResult(optimizedOccupancy, RoomType.ECONOMY);
+        OptimizedRoomOccupancy premiumRoomResult = getRoomResult(optimizedOccupancy, RoomType.PREMIUM);
 
-        assertEquals(0, optimizedOccupancy.get("economy")[0]);
-        assertEquals(0, optimizedOccupancy.get("economy")[1]);
-        assertEquals(0, optimizedOccupancy.get("economy")[0]);
-        assertEquals(0, optimizedOccupancy.get("economy")[1]);
-
+        assertEquals(0, economyRoomResult.getOccupancy());
+        assertEquals(0, economyRoomResult.getResult());
+        assertEquals(0, premiumRoomResult.getOccupancy());
+        assertEquals(0, premiumRoomResult.getResult());
     }
 
     @Test
@@ -41,40 +43,56 @@ public class OccupancyOptimizationServiceShould {
         int freePremiumRooms = 2;
         int freeEconomyRoom = 2;
 
-        Map<String, Integer[]> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        OptimizedRoomOccupancy economyRoomResult = getRoomResult(optimizedOccupancy, RoomType.ECONOMY);
+        OptimizedRoomOccupancy premiumRoomResult = getRoomResult(optimizedOccupancy, RoomType.PREMIUM);
 
-        assertEquals(2, optimizedOccupancy.get("economy")[0]);
-        assertEquals(50, optimizedOccupancy.get("economy")[1]);
-        assertEquals(2, optimizedOccupancy.get("premium")[0]);
-        assertEquals(500, optimizedOccupancy.get("premium")[1]);
+        assertEquals(2, economyRoomResult.getOccupancy());
+        assertEquals(50, economyRoomResult.getResult());
+        assertEquals(2, premiumRoomResult.getOccupancy());
+        assertEquals(500, premiumRoomResult.getResult());
     }
 
     @Test
-    public void allow_room_upgrade_to_economy_customers() {
+    public void
+    allow_room_upgrade_to_economy_customers() {
         List<Integer> customersBudget = Arrays.asList(200, 20, 10, 30);
         int freePremiumRooms = 2;
         int freeEconomyRoom = 2;
 
-        Map<String, Integer[]> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        OptimizedRoomOccupancy economyRoomResult = getRoomResult(optimizedOccupancy, RoomType.ECONOMY);
+        OptimizedRoomOccupancy premiumRoomResult = getRoomResult(optimizedOccupancy, RoomType.PREMIUM);
 
-        assertEquals(2, optimizedOccupancy.get("economy")[0]);
-        assertEquals(30, optimizedOccupancy.get("economy")[1]);
-        assertEquals(2, optimizedOccupancy.get("premium")[0]);
-        assertEquals(230, optimizedOccupancy.get("premium")[1]);
+
+        assertEquals(2, economyRoomResult.getOccupancy());
+        assertEquals(30, economyRoomResult.getResult());
+        assertEquals(2, premiumRoomResult.getOccupancy());
+        assertEquals(230, premiumRoomResult.getResult());
     }
 
     @Test
-    public void not_allow_room_upgrade_to_economy_customers_when_there_is_an_available_economy_room() {
-        List<Integer> customersBudget = Arrays.asList(200, 20, 10, 30);
+    public void
+    not_allow_room_upgrade_to_economy_customers_when_there_is_an_available_economy_room() {
+        List<Integer> customersBudget = Arrays.asList(20, 10, 30);
         int freePremiumRooms = 2;
         int freeEconomyRoom = 3;
 
-        Map<String, Integer[]> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        OptimizedRoomOccupancy economyRoomResult = getRoomResult(optimizedOccupancy, RoomType.ECONOMY);
+        OptimizedRoomOccupancy premiumRoomResult = getRoomResult(optimizedOccupancy, RoomType.PREMIUM);
 
-        assertEquals(3, optimizedOccupancy.get("economy")[0]);
-        assertEquals(60, optimizedOccupancy.get("economy")[1]);
-        assertEquals(1, optimizedOccupancy.get("premium")[0]);
-        assertEquals(200, optimizedOccupancy.get("premium")[1]);
+
+        assertEquals(3, economyRoomResult.getOccupancy());
+        assertEquals(60, economyRoomResult.getResult());
+        assertEquals(0, premiumRoomResult.getOccupancy());
+        assertEquals(0, premiumRoomResult.getResult());
+    }
+
+    private OptimizedRoomOccupancy getRoomResult(List<OptimizedRoomOccupancy> optimizedOccupancy, RoomType economy) {
+        return optimizedOccupancy.stream()
+                .filter(optimizedRoomOccupancy -> economy.equals(optimizedRoomOccupancy.getType()))
+                .findFirst().get();
     }
 
 }
