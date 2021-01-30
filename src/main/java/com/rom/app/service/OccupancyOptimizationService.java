@@ -14,26 +14,26 @@ import static com.rom.app.model.RoomType.PREMIUM;
 import static java.util.stream.Collectors.toList;
 
 public class OccupancyOptimizationService {
-    public List<OptimizedRoomOccupancy> optimize(List<Integer> customersBudget, int freeEconomyRoom, int freePremiumRooms) {
-        Map<RoomType, List<Integer>> clusteredCustomers = clusterByBudget(customersBudget);
 
-        List<Integer> assignedPremiumCustomers = clusteredCustomers.getOrDefault(PREMIUM, new ArrayList<>()).stream()
-                .limit(freePremiumRooms)
-                .collect(toList());
+    public List<OptimizedRoomOccupancy> optimize(RoomMap roomMap) {
+        Map<RoomType, List<Integer>> clusteredCustomers = clusterByBudget(roomMap.getCustomers());
 
-        List<Integer> assignedEconomyCustomers = clusteredCustomers.getOrDefault(ECONOMY, new ArrayList<>());
+        List<Integer> assignedEconomyCustomers = getCustomersFromCluster(clusteredCustomers, ECONOMY);
+        List<Integer> assignedPremiumCustomers = assignAvailableRooms(
+                getCustomersFromCluster(clusteredCustomers, PREMIUM),
+                roomMap.getAvailablePremiumRooms()
+        );
 
-        boolean havePremiumRoomsAvailable = freePremiumRooms > assignedPremiumCustomers.size();
-        boolean haveMoreEconomyCustomersThenRoom = freeEconomyRoom < assignedEconomyCustomers.size();
+        boolean havePremiumRoomsAvailable = roomMap.getAvailablePremiumRooms() > assignedPremiumCustomers.size();
+        boolean haveMoreEconomyCustomersThenRoom = roomMap.getAvailableEconomyRoom() < assignedEconomyCustomers.size();
 
         if (havePremiumRoomsAvailable && haveMoreEconomyCustomersThenRoom) {
-            List<Integer> upgradableCustomers = getUpgradableCustomers(freeEconomyRoom, assignedEconomyCustomers);
-
+            List<Integer> upgradableCustomers = getUpgradableCustomers(roomMap.getAvailableEconomyRoom(), assignedEconomyCustomers);
             assignedPremiumCustomers.addAll(upgradableCustomers);
             assignedEconomyCustomers.removeAll(upgradableCustomers);
         }
 
-        assignedEconomyCustomers = assignedEconomyCustomers.stream().limit(freeEconomyRoom).collect(toList());
+        assignedEconomyCustomers = assignAvailableRooms(assignedEconomyCustomers, roomMap.getAvailableEconomyRoom());
 
         return List.of(
                 new OptimizedRoomOccupancy(PREMIUM, assignedPremiumCustomers),
@@ -41,12 +41,18 @@ public class OccupancyOptimizationService {
         );
     }
 
+    private List<Integer> assignAvailableRooms(List<Integer> customer, int availableRooms) {
+        return customer.stream()
+                .limit(availableRooms).collect(toList());
+    }
+
+    private List<Integer> getCustomersFromCluster(Map<RoomType, List<Integer>> clusteredCustomers, RoomType premium) {
+        return clusteredCustomers.getOrDefault(premium, new ArrayList<>());
+    }
+
     private List<Integer> getUpgradableCustomers(int freeEconomyRoom, List<Integer> economyCustomers) {
         int premiumRoomsAvailableForUpgrade = economyCustomers.size() - freeEconomyRoom;
-
-        return economyCustomers.stream()
-                .limit(premiumRoomsAvailableForUpgrade)
-                .collect(toList());
+        return assignAvailableRooms(economyCustomers, premiumRoomsAvailableForUpgrade);
     }
 
     private Map<RoomType, List<Integer>> clusterByBudget(List<Integer> customersBudget) {

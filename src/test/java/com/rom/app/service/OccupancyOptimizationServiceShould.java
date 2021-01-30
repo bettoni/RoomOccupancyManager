@@ -5,9 +5,9 @@ import com.rom.app.model.RoomType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class OccupancyOptimizationServiceShould {
@@ -22,11 +22,8 @@ public class OccupancyOptimizationServiceShould {
     @Test
     public void
     not_book_economy_room_to_premium_customer() {
-        List<Integer> customersBudget = Arrays.asList(100, 200, 300, 400, 500);
-        int freePremiumRooms = 0;
-        int freeEconomyRoom = 3;
-
-        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        RoomMap roomMap = new RoomMap(asList(100, 200, 300, 400, 500), 3, 0);
+        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(roomMap);
         OptimizedRoomOccupancy economyRoomResult = getRoomResult(optimizedOccupancy, RoomType.ECONOMY);
         OptimizedRoomOccupancy premiumRoomResult = getRoomResult(optimizedOccupancy, RoomType.PREMIUM);
 
@@ -39,11 +36,9 @@ public class OccupancyOptimizationServiceShould {
     @Test
     public void
     occupy_all_rooms_with_highest_paying_customers() {
-        List<Integer> customersBudget = Arrays.asList(200, 100, 300, 20, 10, 30);
-        int freePremiumRooms = 2;
-        int freeEconomyRoom = 2;
-
-        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        List<Integer> customers = asList(200, 100, 300, 20, 10, 30);
+        RoomMap roomMap = new RoomMap(customers, 2, 2);
+        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(roomMap);
         OptimizedRoomOccupancy economyRoomResult = getRoomResult(optimizedOccupancy, RoomType.ECONOMY);
         OptimizedRoomOccupancy premiumRoomResult = getRoomResult(optimizedOccupancy, RoomType.PREMIUM);
 
@@ -56,11 +51,8 @@ public class OccupancyOptimizationServiceShould {
     @Test
     public void
     allow_room_upgrade_to_economy_customers() {
-        List<Integer> customersBudget = Arrays.asList(200, 20, 10, 30);
-        int freePremiumRooms = 2;
-        int freeEconomyRoom = 2;
-
-        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        RoomMap roomMap = new RoomMap(asList(200, 20, 10, 30), 2, 2);
+        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(roomMap);
         OptimizedRoomOccupancy economyRoomResult = getRoomResult(optimizedOccupancy, RoomType.ECONOMY);
         OptimizedRoomOccupancy premiumRoomResult = getRoomResult(optimizedOccupancy, RoomType.PREMIUM);
 
@@ -74,11 +66,8 @@ public class OccupancyOptimizationServiceShould {
     @Test
     public void
     not_allow_room_upgrade_to_economy_customers_when_there_is_an_available_economy_room() {
-        List<Integer> customersBudget = Arrays.asList(20, 10, 30);
-        int freePremiumRooms = 2;
-        int freeEconomyRoom = 3;
-
-        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(customersBudget, freeEconomyRoom, freePremiumRooms);
+        RoomMap roomMap = new RoomMap(asList(20, 10, 30), 3, 2);
+        List<OptimizedRoomOccupancy> optimizedOccupancy = service.optimize(roomMap);
         OptimizedRoomOccupancy economyRoomResult = getRoomResult(optimizedOccupancy, RoomType.ECONOMY);
         OptimizedRoomOccupancy premiumRoomResult = getRoomResult(optimizedOccupancy, RoomType.PREMIUM);
 
