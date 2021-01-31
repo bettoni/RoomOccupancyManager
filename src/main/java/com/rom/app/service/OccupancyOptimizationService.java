@@ -1,7 +1,9 @@
 package com.rom.app.service;
 
 import com.rom.app.model.OptimizedRoomOccupancy;
+import com.rom.app.model.RoomMap;
 import com.rom.app.model.RoomType;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +15,7 @@ import static com.rom.app.model.RoomType.ECONOMY;
 import static com.rom.app.model.RoomType.PREMIUM;
 import static java.util.stream.Collectors.toList;
 
+@Service
 public class OccupancyOptimizationService {
 
     public List<OptimizedRoomOccupancy> optimize(RoomMap roomMap) {
