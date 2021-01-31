@@ -30,17 +30,17 @@ public class RoomOccupancyOptimizationManagerShould {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"customers\": [23, 45, 155, 374, 22, 99, 100, 101, 115, 209]," +
                         "\"free_premium_rooms\":7," +
-                        "\"free_economy_rooms\":5}"))
+                        "\"free_economy_rooms\":1}"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].type", is("PREMIUM")))
-                .andExpect(jsonPath("$[0].occupancy", equalTo(6)))
-                .andExpect(jsonPath("$[0].result", equalTo(1054)))
+                .andExpect(jsonPath("$[0].occupancy", equalTo(7)))
+                .andExpect(jsonPath("$[0].result", equalTo(1153)))
                 .andExpect(jsonPath("$[1].type", is("ECONOMY")))
-                .andExpect(jsonPath("$[1].occupancy", equalTo(4)))
-                .andExpect(jsonPath("$[1].result", equalTo(189)));
+                .andExpect(jsonPath("$[1].occupancy", equalTo(1)))
+                .andExpect(jsonPath("$[1].result", equalTo(45)));
     }
 
     @ParameterizedTest
