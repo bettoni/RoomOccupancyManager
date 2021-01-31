@@ -1,6 +1,8 @@
 package com.rom.app.it;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,7 +41,19 @@ public class RoomOccupancyOptimizationManagerShould {
                 .andExpect(jsonPath("$[1].type", is("ECONOMY")))
                 .andExpect(jsonPath("$[1].occupancy", equalTo(4)))
                 .andExpect(jsonPath("$[1].result", equalTo(189)));
+    }
 
-
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{\"customers\": [23, 45, 155, 374, 22, 99, 100, 101, 115, 209],\"free_premium_rooms\":7}",
+            "{\"customers\": [23, null, 155],\"free_premium_rooms\":7,\"free_economy_rooms\":7}",
+            "{\"customers\": [],\"free_premium_rooms\":7,\"free_economy_rooms\":7}",
+            "{\"free_economy_rooms\":7,\"free_premium_rooms\":7}",
+            "{\"customers\": [23, 45, 155, 374, 22, 99, 100, 101, 115, 209],\"free_economy_rooms\":7}",})
+    public void return_bad_request_with_invalid_parameters(String invalid_json) throws Exception {
+        this.apiClient.perform(post("/occupancy/optimize")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalid_json))
+                .andExpect(status().isBadRequest());
     }
 }
