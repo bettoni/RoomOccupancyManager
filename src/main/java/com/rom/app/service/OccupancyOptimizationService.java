@@ -31,7 +31,7 @@ public class OccupancyOptimizationService {
         boolean haveMoreEconomyCustomersThenRoom = roomMap.getAvailableEconomyRoom() < assignedEconomyCustomers.size();
 
         if (havePremiumRoomsAvailable && haveMoreEconomyCustomersThenRoom) {
-            var availablePremiumRooms = roomMap.getAvailablePremiumRooms() - assignedPremiumCustomers.size();
+            int availablePremiumRooms = roomMap.getAvailablePremiumRooms() - assignedPremiumCustomers.size();
             List<Integer> upgradableCustomers = getUpgradableCustomers(availablePremiumRooms, assignedEconomyCustomers);
             assignedPremiumCustomers.addAll(upgradableCustomers);
             assignedEconomyCustomers.removeAll(upgradableCustomers);
